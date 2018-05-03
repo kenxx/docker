@@ -1,2 +1,6 @@
+develop/data/*
+
+production/data/*
+
 # fff
 !.gitkeep
