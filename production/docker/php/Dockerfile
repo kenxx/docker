@@ -1,0 +1,76 @@
+FROM php:7.1-fpm
+
+ARG SOURCE
+ARG COMPOSER=https://getcomposer.org/installer
+
+# set apt repos
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
+	{ \
+        echo 'deb http://mirrors.aliyun.com/debian/ jessie main non-free contrib'; \
+        echo 'deb-src http://mirrors.aliyun.com/debian/ jessie main non-free contrib'; \
+#        echo 'deb http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib'; \
+#        echo 'deb-src http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib'; \
+#        echo 'deb http://mirrors.aliyun.com/debian-backports/ jessie-backports main contrib non-free'; \
+#        echo 'deb-src http://mirrors.aliyun.com/debian-backports/ jessie-backports main contrib non-free'; \
+        echo 'deb http://mirrors.aliyun.com/debian-security/ jessie/updates main non-free contrib'; \
+        echo 'deb-src http://mirrors.aliyun.com/debian-security/ jessie/updates main non-free contrib'; \
+	} > /etc/apt/sources.list; \
+	\
+	cat /etc/apt/sources.list; \
+	if [ ${SOURCE} ]; then \
+		sed -i "s/mirrors.aliyun.com/${SOURCE}/g" /etc/apt/sources.list; \
+		cat /etc/apt/sources.list; \
+	fi
+
+RUN curl -sS ${COMPOSER} | php; \
+	mv composer.phar /usr/local/bin/composer; \
+	chmod +x /usr/local/bin/composer; \
+	composer -V
+
+RUN set -ex; \
+	\
+	savedAptMark="$(apt-mark showmanual)"; \
+	\
+	apt-get update; \
+	apt-get install -y \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libxml2-dev \
+		libmemcached-dev \
+        libpng-dev; \
+	\
+    docker-php-ext-install -j$(nproc) mcrypt pdo_mysql simplexml sockets mysqli; \
+    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/; \
+    docker-php-ext-install -j$(nproc) gd; \
+	\
+	pecl install igbinary-2.0.5 msgpack-2.0.2; \
+	docker-php-ext-enable igbinary msgpack; \
+	pecl install xdebug-2.6.0 memcached-3.0.4 mongodb-1.4.3 redis-4.0.2; \
+	docker-php-ext-enable xdebug memcached mongodb redis; \
+	\
+# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+	apt-mark auto '.*' > /dev/null; \
+	apt-mark manual $savedAptMark; \
+	ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
+		| awk '/=>/ { print $3 }' \
+		| sort -u \
+		| xargs -r dpkg-query -S \
+		| cut -d: -f1 \
+		| sort -u \
+		| xargs -rt apt-mark manual; \
+	\
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+	rm -rf /var/lib/apt/lists/*
+
+# set recommended PHP.ini settings
+# see https://secure.php.net/manual/en/opcache.installation.php
+RUN { \
+		echo 'opcache.memory_consumption=128'; \
+		echo 'opcache.interned_strings_buffer=8'; \
+		echo 'opcache.max_accelerated_files=4000'; \
+		echo 'opcache.revalidate_freq=2'; \
+		echo 'opcache.fast_shutdown=1'; \
+		echo 'opcache.enable_cli=1'; \
+	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+

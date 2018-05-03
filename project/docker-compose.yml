@@ -1,0 +1,35 @@
+version: "3"
+services:
+# see https://github.com/gogits/gogs/tree/master/docker
+  gogs:
+    images: gogs/gogs:latest
+    container_name: proj_gogs
+    ports:
+      - "2222:22"
+      - "3000:3000"
+    volumes:
+      - ./data/gogs:/data
+      - ./data/certs:/etc/certs
+# see http://docs.drone.io/installation/
+  drone-server:
+    images: drone/drone:latest
+    container_name: proj_drone_server
+    volumes:
+      - ./data/drone:/var/lib/drone
+      - ./data/certs:/etc/certs
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    env_file:
+      - ./.drone.env
+  drone-agent:
+    image: drone/agent:latest
+    container_name: proj_drone_agent
+    command: agent
+    restart: always
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./.drone.env

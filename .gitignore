@@ -1,6 +1,5 @@
-develop/data/*
+*/data/*/
+!*/data/wwwroot/
 
-production/data/*
-
-# fff
-!.gitkeep
+# to keep a empty dir
+!!.gitkeep
