@@ -1,5 +1,8 @@
 */data/*/
 !*/data/wwwroot/
 
+/production/.*.env
+/project/.*.env
+
 # to keep a empty dir
 !!.gitkeep

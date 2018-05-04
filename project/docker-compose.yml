@@ -2,7 +2,7 @@ version: "3"
 services:
 # see https://github.com/gogits/gogs/tree/master/docker
   gogs:
-    images: gogs/gogs:latest
+    image: gogs/gogs:latest
     container_name: proj_gogs
     ports:
       - "2222:22"
@@ -12,7 +12,7 @@ services:
       - ./data/certs:/etc/certs
 # see http://docs.drone.io/installation/
   drone-server:
-    images: drone/drone:latest
+    image: drone/drone:latest
     container_name: proj_drone_server
     volumes:
       - ./data/drone:/var/lib/drone
