@@ -46,8 +46,21 @@ RUN set -ex; \
 	\
 	pecl install igbinary-2.0.5 msgpack-2.0.2; \
 	docker-php-ext-enable igbinary msgpack; \
-	pecl install xdebug-2.6.0 memcached-3.0.4 mongodb-1.4.3 redis-4.0.2; \
-	docker-php-ext-enable xdebug memcached mongodb redis; \
+	pecl install xdebug-2.6.0 mongodb-1.4.3 redis-4.0.2; \
+	docker-php-ext-enable xdebug mongodb redis; \
+	\
+	pecl download memcached-3.0.4 \
+	&& tar xf memcached-3.0.4.tgz \
+	&& rm memcached-3.0.4.tgz \
+	&& ( \
+		cd memcached-3.0.4 \
+		&& phpize \
+		&& ./configure --enable-memcached-igbinary \
+		&& make -j$(nproc) \
+		&& make install \
+	) \
+	&& rm -r memcached-3.0.4 \
+	&& docker-php-ext-enable memcached; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
 	apt-mark auto '.*' > /dev/null; \
