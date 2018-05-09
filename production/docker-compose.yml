@@ -38,6 +38,7 @@ services:
 #      - "3306:3306"
     volumes:
       - ./data/mysql:/var/lib/mysql 
+      - ./conf/mysql/my.cnf:/etc/my.cnf
   redis:
     image: redis:latest
     container_name: prod_redis
@@ -45,6 +46,8 @@ services:
 #      - "6379:6379"
     volumes:
       - ./data/redis:/data
+      - ./conf/redis/redis.conf:/etc/redis.conf
+    command: redis-server /etc/redis
   mongo:
     image: mongo:latest
     container_name: prod_mongo
