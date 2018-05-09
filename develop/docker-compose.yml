@@ -14,7 +14,7 @@ services:
     depends_on:
       - php
   php:
-    build: ./docker/php
+    build: ../php
     image: kenx/php:7.1-fpm-full
     container_name: dev_php
     ports:

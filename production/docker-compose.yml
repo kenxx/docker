@@ -18,7 +18,7 @@ services:
 #      - default
 #      - project_default
   php:
-    build: ./docker/php
+    build: ../php
     image: kenx/php:7.1-fpm-full
     container_name: prod_php
 #    ports:
