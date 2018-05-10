@@ -47,7 +47,9 @@ services:
     volumes:
       - ./data/redis:/data
       - ./conf/redis/redis.conf:/etc/redis.conf
-    command: redis-server /etc/redis
+    command: redis-server /etc/redis.conf
+    sysctls:
+      - net.core.somaxconn=512
   mongo:
     image: mongo:latest
     container_name: prod_mongo

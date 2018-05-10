@@ -1,87 +1,95 @@
 <?php
-function get_mysql_server_version() {
+function get_mysql_server_version()
+{
 	$mysql = new \mysqli();
 	$mysql->connect($_SERVER['MYSQL_HOST'], 'root', $_SERVER['MYSQL_ROOT_PASSWORD']);
 	if ($mysql->connect_errno) {
-		return false;
+		return 'connection failed.';
 	}
 
-    $version = $mysql->get_server_info();
-    $mysql->close();
+	$version = $mysql->get_server_info();
+	$mysql->close();
 
-    return $version;
+	return $version;
 }
 
-function get_mongo_server_version() {
-	$manager = new MongoDB\Driver\Manager('mongodb://'.$_SERVER['MONGODB_HOST'].':27017/');
+function get_mongo_server_version()
+{
+	$manager = new MongoDB\Driver\Manager('mongodb://' . $_SERVER['MONGODB_HOST'] . ':' . $_SERVER['MONGODB_PORT'] . '/');
 	$command = new MongoDB\Driver\Command(['serverStatus' => 1]);
 	try {
 		$cursor = $manager->executeCommand('test', $command);
 	} catch (\MongoDB\Driver\Exception\Exception $e) {
-	  return false;
-  }
+		return 'connection failed.';
+	}
 
-  $version = $cursor->toArray()[0]->version;
+	$version = $cursor->toArray()[0]->version;
 
 	return $version;
 
 }
 
-function get_redis_server_version() {
-  $redis = new Redis();
+function get_redis_server_version()
+{
+	$redis = new Redis();
 
-  $ret = $redis->connect($_SERVER['REDIS_HOST']);
+	try {
+		$ret = $redis->connect($_SERVER['REDIS_HOST'], $_SERVER['REDIS_PORT']);
+	} catch (\Exception $e) {
+		return 'connection failed.';
+	}
 
-  if ($ret) {
-    $version = ((array)$redis->info())['redis_version'];
+	if ($ret) {
+		$version = ((array)$redis->info())['redis_version'];
 
-    $redis->close();
+		$redis->close();
 
-	  return $version;
-  }
+		return $version;
+	}
 
-  return false;
+	return false;
 }
 
-function get_memcache_server_version() {
-  $m = new Memcached();
+function get_memcache_server_version()
+{
+	$m = new Memcached();
 
-  $ret = $m->addServer($_SERVER['MEMCACHED_HOST'], 11211);
+	$ret = $m->addServer($_SERVER['MEMCACHED_HOST'], 11211);
 
-  if ($ret) {
-    $version = $m->getVersion();
+	if ($ret) {
+		$version = $m->getVersion();
 
-    $m->quit();
+		$m->quit();
 
-    return $version ? current($version) : false;
-  }
+		return $version ? current($version) : false;
+	}
 
-  return false;
+	return 'connection failed.';
 }
 
 if (isset($_GET['phpinfo']) && $_GET['phpinfo']) {
-  phpinfo();
-  return;
+	phpinfo();
+	return;
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Welcome to Develop docker-compose stack</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Welcome to Develop docker-compose stack</title>
 </head>
 <body>
 <h3>We have some services running in this stack:</h3>
 <ol>
-    <li>PHP: <?php echo phpversion() ?></li>
-    <li>nginx: <?php echo str_replace('nginx/', '', $_SERVER['SERVER_SOFTWARE']) ?></li>
-    <li>MySQL: <?php echo get_mysql_server_version(); ?></li>
-    <li>MongoDB: <?php echo get_mongo_server_version(); ?></li>
-    <li>Redis: <?php echo get_redis_server_version(); ?></li>
-    <li>Memcached: <?php echo get_memcache_server_version(); ?></li>
+  <li>PHP: <?php echo phpversion() ?></li>
+  <li>nginx: <?php echo str_replace('nginx/', '', $_SERVER['SERVER_SOFTWARE']) ?></li>
+  <li>MySQL: <?php echo get_mysql_server_version(); ?></li>
+  <li>MongoDB: <?php echo get_mongo_server_version(); ?></li>
+  <li>Redis: <?php echo get_redis_server_version(); ?></li>
+  <li>Memcached: <?php echo get_memcache_server_version(); ?></li>
 </ol>
 <h3>We also have some extensions in php runtime (installed by using PECL):</h3>
 <ol>
@@ -94,8 +102,10 @@ if (isset($_GET['phpinfo']) && $_GET['phpinfo']) {
 </ol>
 <h3>Other things</h3>
 <p>To get PHP info, please <a href="?phpinfo=1">click here</a>.</p>
-<p>We have a adminer docker to manage MySQL in case you can not link to it , <a href="http://<?php echo $_SERVER['HTTP_HOST']; ?>:8080">click here</a>.</p>
-<p>You may also needs composer which we already install the latest version, you can use this command to get the version:</p>
+<p>We have a adminer docker to manage MySQL in case you can not link to it , <a
+      href="http://<?php echo $_SERVER['HTTP_HOST']; ?>:8080">click here</a>.</p>
+<p>You may also needs composer which we already install the latest version, you can use this command to get the
+  version:</p>
 <pre><code>docker exec -it --user www-data dev_php composer -V</code></pre>
 <p>To get more docker info, please using this command: </p>
 <pre><code>docker ps -a</code></pre>
@@ -110,6 +120,7 @@ f0663c6f9b6b        mysql:5.7           "docker-entrypoint.s…"   About an hour
 f84cc9368e02        develop_php         "docker-php-entrypoi…"   About an hour ago   Up About an hour    0.0.0.0:9000->9000/tcp                     dev_php
 1cb1bcea9808        nginx:latest        "nginx -g 'daemon of…"   About an hour ago   Up About an hour    0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp   dev_nginx
 </pre>
-<p>This Docker Compose is a simple project that I maintenance now, for more info please <a href="https://github.com/kenxx/Dockers/tree/master/develop">click here</a>.</p>
+<p>This Docker Compose is a simple project that I maintenance now, for more info please <a
+      href="https://github.com/kenxx/Dockers/tree/master/develop">click here</a>.</p>
 </body>
 </html>
