@@ -3,6 +3,7 @@ services:
   nginx:
     image: nginx:latest
     container_name: dev_nginx
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -17,6 +18,7 @@ services:
     build: ../php
     image: kenx/php:7.1-fpm-full
     container_name: dev_php
+    restart: always
     ports:
       - "9000:9000"
     volumes:
@@ -37,6 +39,7 @@ services:
   redis:
     image: redis:latest
     container_name: dev_redis
+    restart: always
     ports:
       - "6379:6379"
     volumes:
@@ -44,6 +47,7 @@ services:
   mongo:
     image: mongo:latest
     container_name: dev_mongo
+    restart: always
     ports:
       - "27017:27017"
     volumes:
@@ -51,10 +55,12 @@ services:
   memcached:
     image: memcached:latest
     container_name: dev_memcached
+    restart: always
     ports:
       - "11211:11211"
   adminer:
     image: adminer:latest
     container_name: dev_adminer
+    restart: always
     ports:
       - "8080:8080"

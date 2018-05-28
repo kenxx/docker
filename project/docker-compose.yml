@@ -4,6 +4,7 @@ services:
   gogs:
     image: gogs/gogs:latest
     container_name: proj_gogs
+    restart: always
     ports:
       - "2222:22"
       - "3000:3000"
@@ -14,6 +15,7 @@ services:
   drone-server:
     image: drone/drone:latest
     container_name: proj_drone_server
+    restart: always
     volumes:
       - ./data/drone:/var/lib/drone
       - ./data/certs:/etc/certs
@@ -25,6 +27,7 @@ services:
   drone-agent:
     image: drone/agent:latest
     container_name: proj_drone_agent
+    restart: always
     command: agent
     restart: always
     depends_on:

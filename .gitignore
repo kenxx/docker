@@ -1,5 +1,7 @@
 */data/*/
 !*/data/wwwroot/
+*/data/wwwroot/*/
+!*/data/wwwroot/*/default/
 */conf/nginx/conf.d/*
 !*/conf/nginx/conf.d/default.conf
 
