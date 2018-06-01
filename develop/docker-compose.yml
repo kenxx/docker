@@ -15,8 +15,10 @@ services:
     depends_on:
       - php
   php:
-    build: ../php
-    image: kenx/php:7.1-fpm-full
+    build:
+      context: ../php
+      dockerfile: Dockerfile-swoole
+    image: kenx/php:7.1-fpm-swoole
     container_name: dev_php
     restart: always
     ports:

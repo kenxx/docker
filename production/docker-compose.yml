@@ -20,6 +20,8 @@ services:
 #      - project_default
   php:
     build: ../php
+      context: ../php
+      dockerfile: Dockerfile-swoole
     image: kenx/php:7.1-fpm-full
     container_name: prod_php
     restart: always
