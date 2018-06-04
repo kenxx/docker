@@ -4,10 +4,10 @@ ARG SOURCE
 ARG COMPOSER=https://getcomposer.org/installer
 ARG COMPOSER_ADDR=https://packagist.phpcomposer.com
 ARG XDEBUG=1
-ARG SWOOLE=1
+ARG SWOOLE=0
 
 # set apt repos
-RUN if [ ${SOURCE} ]; then
+RUN if [ ${SOURCE} ]; then \
 		mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
 		{ \
     	    echo "deb http://${SOURCE}/debian/ jessie main non-free contrib"; \
@@ -19,8 +19,7 @@ RUN if [ ${SOURCE} ]; then
 		cat /etc/apt/sources.list; \
 	fi; \
 	\
-	mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer; \
-	\
+	mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer
 #	if [ ${SOURCE_REPLACE} ]; then \
 #		sed -i "s/${SOURCE}/${SOURCE_REPLACE}/g" /etc/apt/sources.list; \
 #		cat /etc/apt/sources.list; \
@@ -32,8 +31,7 @@ RUN curl -sS ${COMPOSER} | php; \
 	composer -V; \
 	if [ ${COMPOSER_ADDR} ]; then \
 		composer config -g repo.packagist composer ${COMPOSER_ADDR}; \
-	fi; \
-	\
+	fi
 
 RUN set -ex; \
 	\
@@ -57,12 +55,12 @@ RUN set -ex; \
 	pecl install mongodb-1.4.3 redis-4.0.2; \
 	docker-php-ext-enable mongodb redis; \
 	if [ ${XDEBUG} ]; then \
-		pecl install xdebug-2.6.0;
-		docker-php-ext-enable xdebug;
+		pecl install xdebug-2.6.0; \
+		docker-php-ext-enable xdebug; \
 	fi; \
 	if [ ${SWOOLE} ]; then \
-		pecl install swoole-2.2.0;
-		docker-php-ext-enable swoole;
+		pecl install swoole-2.2.0; \
+		docker-php-ext-enable swoole; \
 	fi; \
 	\
 	pecl download memcached-3.0.4 \
