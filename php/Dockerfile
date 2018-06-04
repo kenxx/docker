@@ -2,30 +2,38 @@ FROM php:7.1-fpm
 
 ARG SOURCE
 ARG COMPOSER=https://getcomposer.org/installer
+ARG COMPOSER_ADDR=https://packagist.phpcomposer.com
+ARG XDEBUG=1
+ARG SWOOLE=1
 
 # set apt repos
-RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
-	{ \
-        echo 'deb http://mirrors.aliyun.com/debian/ jessie main non-free contrib'; \
-        echo 'deb-src http://mirrors.aliyun.com/debian/ jessie main non-free contrib'; \
-#        echo 'deb http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib'; \
-#        echo 'deb-src http://mirrors.aliyun.com/debian/ jessie-proposed-updates main non-free contrib'; \
-#        echo 'deb http://mirrors.aliyun.com/debian-backports/ jessie-backports main contrib non-free'; \
-#        echo 'deb-src http://mirrors.aliyun.com/debian-backports/ jessie-backports main contrib non-free'; \
-        echo 'deb http://mirrors.aliyun.com/debian-security/ jessie/updates main non-free contrib'; \
-        echo 'deb-src http://mirrors.aliyun.com/debian-security/ jessie/updates main non-free contrib'; \
-	} > /etc/apt/sources.list; \
-	\
-	cat /etc/apt/sources.list; \
-	if [ ${SOURCE} ]; then \
-		sed -i "s/mirrors.aliyun.com/${SOURCE}/g" /etc/apt/sources.list; \
+RUN if [ ${SOURCE} ]; then
+		mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
+		{ \
+    	    echo "deb http://${SOURCE}/debian/ jessie main non-free contrib"; \
+        	echo "deb-src http://${SOURCE}/debian/ jessie main non-free contrib"; \
+        	echo "deb http://${SOURCE}/debian-security/ jessie/updates main non-free contrib"; \
+	        echo "deb-src http://${SOURCE}/debian-security/ jessie/updates main non-free contrib"; \
+		} > /etc/apt/sources.list; \
+		\
 		cat /etc/apt/sources.list; \
-	fi
+	fi; \
+	\
+	mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer; \
+	\
+#	if [ ${SOURCE_REPLACE} ]; then \
+#		sed -i "s/${SOURCE}/${SOURCE_REPLACE}/g" /etc/apt/sources.list; \
+#		cat /etc/apt/sources.list; \
+#	fi
 
 RUN curl -sS ${COMPOSER} | php; \
 	mv composer.phar /usr/local/bin/composer; \
 	chmod +x /usr/local/bin/composer; \
-	composer -V
+	composer -V; \
+	if [ ${COMPOSER_ADDR} ]; then \
+		composer config -g repo.packagist composer ${COMPOSER_ADDR}; \
+	fi; \
+	\
 
 RUN set -ex; \
 	\
@@ -46,8 +54,16 @@ RUN set -ex; \
 	\
 	pecl install igbinary-2.0.5 msgpack-2.0.2; \
 	docker-php-ext-enable igbinary msgpack; \
-	pecl install xdebug-2.6.0 mongodb-1.4.3 redis-4.0.2; \
-	docker-php-ext-enable xdebug mongodb redis; \
+	pecl install mongodb-1.4.3 redis-4.0.2; \
+	docker-php-ext-enable mongodb redis; \
+	if [ ${XDEBUG} ]; then \
+		pecl install xdebug-2.6.0;
+		docker-php-ext-enable xdebug;
+	fi; \
+	if [ ${SWOOLE} ]; then \
+		pecl install swoole-2.2.0;
+		docker-php-ext-enable swoole;
+	fi; \
 	\
 	pecl download memcached-3.0.4 \
 	&& tar xf memcached-3.0.4.tgz \

@@ -20,5 +20,7 @@ RUN set -xe; \
 		chmod +x ./jbls; \
 	fi
 
+EXPOSE 1027
+
 ENTRYPOINT ["/jbls/jbls"]
 

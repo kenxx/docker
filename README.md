@@ -10,6 +10,23 @@ Some useful `Dockerfile`.
 
 `jbls` server.
 
+## php
+
+modified php:7.1-fpm-jessie
+
+```Dockerfile
+# will override apt mirrors
+ARG SOURCE
+# will set composer installer location
+ARG COMPOSER=https://getcomposer.org/installer
+# will set packagist mirror
+ARG COMPOSER_ADDR=https://packagist.phpcomposer.com
+# will install xdebug-2.6.0
+ARG XDEBUG=1
+# will install swoole-2.2.0
+ARG SWOOLE=1
+```
+
 # docker-compose
 
 Some dockers managed by docker-compose.
