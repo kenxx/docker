@@ -10,22 +10,22 @@ ARG SWOOLE=1
 RUN if [ ${SOURCE} ]; then \
 		mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
 		{ \
-    	    echo "deb http://${SOURCE}/debian/ jessie main non-free contrib"; \
-        	echo "deb-src http://${SOURCE}/debian/ jessie main non-free contrib"; \
-        	echo "deb http://${SOURCE}/debian-security/ jessie/updates main non-free contrib"; \
-	        echo "deb-src http://${SOURCE}/debian-security/ jessie/updates main non-free contrib"; \
+    	    echo "deb https://${SOURCE}/debian/ stretch main non-free contrib"; \
+        	echo "deb-src https://${SOURCE}/debian/ stretch main non-free contrib"; \
+        	echo "deb https://${SOURCE}/debian-security/ stretch/updates main non-free contrib"; \
+	        echo "deb-src https://${SOURCE}/debian-security/ stretch/updates main non-free contrib"; \
 		} > /etc/apt/sources.list; \
 		\
 		cat /etc/apt/sources.list; \
 	fi; \
 	\
-	mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer
+	mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer; \
 #	if [ ${SOURCE_REPLACE} ]; then \
 #		sed -i "s/${SOURCE}/${SOURCE_REPLACE}/g" /etc/apt/sources.list; \
 #		cat /etc/apt/sources.list; \
 #	fi
-
-RUN curl -sS ${COMPOSER} | php; \
+	\
+	curl -sS ${COMPOSER} | php; \
 	mv composer.phar /usr/local/bin/composer; \
 	chmod +x /usr/local/bin/composer; \
 	composer -V; \

@@ -1,19 +1,17 @@
 FROM php:7.2-fpm
 
-ARG SOURCE
+ARG SOURCE=
 ARG COMPOSER=https://getcomposer.org/installer
 ARG COMPOSER_ADDR=https://packagist.phpcomposer.com
 ARG XDEBUG=1
-ARG SWOOLE=0
 
 # set apt repos
 RUN if [ ${SOURCE} ]; then \
 		mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
 		{ \
-    	    echo "deb http://${SOURCE}/debian/ jessie main non-free contrib"; \
-        	echo "deb-src http://${SOURCE}/debian/ jessie main non-free contrib"; \
-        	echo "deb http://${SOURCE}/debian-security/ jessie/updates main non-free contrib"; \
-	        echo "deb-src http://${SOURCE}/debian-security/ jessie/updates main non-free contrib"; \
+    	    echo "deb https://${SOURCE}/debian stretch main"; \
+        	echo "deb https://${SOURCE}/debian stretch-updates main"; \
+        	echo "deb https://${SOURCE}/debian-security stretch/updates main"; \
 		} > /etc/apt/sources.list; \
 		\
 		cat /etc/apt/sources.list; \
@@ -46,34 +44,30 @@ RUN set -ex; \
 		libmemcached-dev \
         libpng-dev; \
 	\
-    docker-php-ext-install -j$(nproc) mcrypt pdo_mysql simplexml sockets mysqli zip; \
+    docker-php-ext-install -j$(nproc) pdo_mysql simplexml sockets mysqli zip; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/; \
     docker-php-ext-install -j$(nproc) gd; \
 	\
-	pecl install igbinary-2.0.5 msgpack-2.0.2; \
-	docker-php-ext-enable igbinary msgpack; \
-	pecl install mongodb-1.4.3 redis-4.0.2; \
+	pecl install igbinary msgpack mcrypt; \
+	docker-php-ext-enable igbinary msgpack mcrypt; \
+	pecl install mongodb redis; \
 	docker-php-ext-enable mongodb redis; \
 	if [ ${XDEBUG} ]; then \
-		pecl install xdebug-2.6.0; \
+		pecl install xdebug; \
 		docker-php-ext-enable xdebug; \
 	fi; \
-	if [ ${SWOOLE} ]; then \
-		pecl install swoole-2.2.0; \
-		docker-php-ext-enable swoole; \
-	fi; \
 	\
-	pecl download memcached-3.0.4 \
-	&& tar xf memcached-3.0.4.tgz \
-	&& rm memcached-3.0.4.tgz \
+	pecl download memcached-3.1.3 \
+	&& tar xf memcached-3.1.3.tgz \
+	&& rm memcached-3.1.3.tgz \
 	&& ( \
-		cd memcached-3.0.4 \
+		cd memcached-3.1.3 \
 		&& phpize \
 		&& ./configure --enable-memcached-igbinary \
 		&& make -j$(nproc) \
 		&& make install \
 	) \
-	&& rm -r memcached-3.0.4 \
+	&& rm -r memcached-3.1 \
 	&& docker-php-ext-enable memcached; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
