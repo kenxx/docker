@@ -7,19 +7,7 @@ ARG XDEBUG=1
 ARG SWOOLE=1
 
 # set apt repos
-RUN if [ ${SOURCE} ]; then \
-		mv /etc/apt/sources.list /etc/apt/sources.list.bak; \
-		{ \
-    	    echo "deb https://${SOURCE}/debian/ stretch main non-free contrib"; \
-        	echo "deb-src https://${SOURCE}/debian/ stretch main non-free contrib"; \
-        	echo "deb https://${SOURCE}/debian-security/ stretch/updates main non-free contrib"; \
-	        echo "deb-src https://${SOURCE}/debian-security/ stretch/updates main non-free contrib"; \
-		} > /etc/apt/sources.list; \
-		\
-		cat /etc/apt/sources.list; \
-	fi; \
-	\
-	mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer; \
+RUN mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer; \
 #	if [ ${SOURCE_REPLACE} ]; then \
 #		sed -i "s/${SOURCE}/${SOURCE_REPLACE}/g" /etc/apt/sources.list; \
 #		cat /etc/apt/sources.list; \
