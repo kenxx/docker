@@ -1,24 +1,33 @@
 FROM php:7.2-fpm
 
-ARG SOURCE
+ARG SOURCE=
 ARG COMPOSER=https://getcomposer.org/installer
 ARG COMPOSER_ADDR=https://packagist.phpcomposer.com
-ARG XDEBUG=1
-ARG SWOOLE=1
+ARG XDEBUG=
+ARG SWOOLE=4.2.13
 
-# set apt repos
-RUN mkdir /var/www/.composer && chown www-data:www-data /var/www/.composer; \
-#	if [ ${SOURCE_REPLACE} ]; then \
-#		sed -i "s/${SOURCE}/${SOURCE_REPLACE}/g" /etc/apt/sources.list; \
-#		cat /etc/apt/sources.list; \
-#	fi
+WORKDIR /var/php
+
+RUN if [ ${SOURCE} ]; then \
+# set up Chinese mirror
+		sed -i "s#http://deb.debian.org/#${SOURCE}#g" /etc/apt/sources.list; \
+		sed -i "s#http://security.debian.org/#${SOURCE}#g" /etc/apt/sources.list; \
+		sed -i "s#http://deb.debian.org/#${SOURCE}#g" /etc/apt/sources.list.d/buster.list; \
+		sed -i "s#http://security.debian.org/#${SOURCE}#g" /etc/apt/sources.list.d/buster.list; \
+		cat /etc/apt/sources.list; \
+	fi; \
 	\
-	curl -sS ${COMPOSER} | php; \
-	mv composer.phar /usr/local/bin/composer; \
-	chmod +x /usr/local/bin/composer; \
-	composer -V; \
-	if [ ${COMPOSER_ADDR} ]; then \
-		composer config -g repo.packagist composer ${COMPOSER_ADDR}; \
+	if [ ${COMPOSER} ]; then \
+# Set composer
+		mkdir /var/php/.composer -p; \
+		chown www-data:www-data /var/php/.composer; \
+		curl -sS ${COMPOSER} | php; \
+		mv composer.phar /usr/local/bin/composer; \
+		chmod +x /usr/local/bin/composer; \
+		composer -V; \
+		if [ ${COMPOSER_MIRROR} ]; then \
+			composer config -g repo.packagist composer ${COMPOSER_MIRROR}; \
+		fi; \
 	fi
 
 RUN set -ex; \
@@ -27,41 +36,44 @@ RUN set -ex; \
 	\
 	apt-get update; \
 	apt-get install -y \
+# for memcached
+		zlib1g-dev \
+		libmemcached-dev \
+# for gd
         libfreetype6-dev \
         libjpeg62-turbo-dev \
-        libmcrypt-dev \
-        libxml2-dev \
-		libmemcached-dev \
-        libpng-dev; \
+        libpng-dev \
+# others
+        libmcrypt-dev; \
 	\
-    docker-php-ext-install -j$(nproc) mcrypt pdo_mysql simplexml sockets mysqli zip; \
+    docker-php-ext-install -j$(nproc) pdo_mysql sockets mysqli zip pcntl; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/; \
     docker-php-ext-install -j$(nproc) gd; \
 	\
-	pecl install igbinary-2.0.5 msgpack-2.0.2; \
+	pecl install igbinary msgpack; \
 	docker-php-ext-enable igbinary msgpack; \
-	pecl install mongodb-1.4.3 redis-4.0.2; \
+	pecl install mongodb redis; \
 	docker-php-ext-enable mongodb redis; \
 	if [ ${XDEBUG} ]; then \
-		pecl install xdebug-2.6.0; \
+		pecl install xdebug-2.6.1; \
 		docker-php-ext-enable xdebug; \
 	fi; \
 	if [ ${SWOOLE} ]; then \
-		pecl install swoole-2.2.0; \
+		pecl install swoole-4.2.13; \
 		docker-php-ext-enable swoole; \
 	fi; \
 	\
-	pecl download memcached-3.0.4 \
-	&& tar xf memcached-3.0.4.tgz \
-	&& rm memcached-3.0.4.tgz \
+	pecl download memcached-3.1.3 \
+	&& tar xf memcached-3.1.3.tgz \
+	&& rm memcached-3.1.3.tgz \
 	&& ( \
-		cd memcached-3.0.4 \
+		cd memcached-3.1.3 \
 		&& phpize \
-		&& ./configure --enable-memcached-igbinary \
+		&& ./configure --enable-memcached-igbinary --enable-memcached-msgpack \
 		&& make -j$(nproc) \
 		&& make install \
 	) \
-	&& rm -r memcached-3.0.4 \
+	&& rm -r memcached-3.1.3 \
 	&& docker-php-ext-enable memcached; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
