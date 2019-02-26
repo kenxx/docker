@@ -2,8 +2,11 @@ FROM php:7.2-cli
 
 ARG SOURCE=
 ARG COMPOSER=https://getcomposer.org/installer
-ARG COMPOSER_MIRROR=https://packagist.phpcomposer.com
+#https://packagist.phpcomposer.com
+ARG COMPOSER_MIRROR=
+#2.6.1
 ARG XDEBUG=
+#4.2.13
 ARG SWOOLE=
 
 WORKDIR /var/php
@@ -50,30 +53,31 @@ RUN set -ex; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/; \
     docker-php-ext-install -j$(nproc) gd; \
 	\
-	pecl install igbinary msgpack; \
-	docker-php-ext-enable igbinary msgpack; \
 	pecl install mongodb redis; \
 	docker-php-ext-enable mongodb redis; \
 	if [ ${XDEBUG} ]; then \
-		pecl install xdebug-2.6.1; \
+		pecl install xdebug-${XDEBUG}; \
 		docker-php-ext-enable xdebug; \
 	fi; \
 	if [ ${SWOOLE} ]; then \
-		pecl install swoole-4.2.13; \
+		pecl install swoole-${SWOOLE}; \
 		docker-php-ext-enable swoole; \
 	fi; \
 	\
-	pecl download memcached-3.1.3 \
-	&& tar xf memcached-3.1.3.tgz \
-	&& rm memcached-3.1.3.tgz \
+	pecl install igbinary msgpack \
+	&& docker-php-ext-enable igbinary msgpack \
+	&& MEMCACHED=3.1.3 \
+	&& pecl download memcached-${MEMCACHED} \
+	&& tar xf memcached-${MEMCACHED}.tgz \
+	&& rm memcached-${MEMCACHED}.tgz \
 	&& ( \
-		cd memcached-3.1.3 \
+		cd memcached-${MEMCACHED} \
 		&& phpize \
 		&& ./configure --enable-memcached-igbinary --enable-memcached-msgpack \
 		&& make -j$(nproc) \
 		&& make install \
 	) \
-	&& rm -r memcached-3.1.3 \
+	&& rm -r memcached-${MEMCACHED} \
 	&& docker-php-ext-enable memcached; \
 	\
 # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies

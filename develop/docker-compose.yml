@@ -16,9 +16,9 @@ services:
       - php
   php:
     build:
-      context: ../php
-      dockerfile: Dockerfile-swoole
-    image: kenx/php:7.1-fpm-swoole
+      context: ../php/7.2-swoole
+      dockerfile: Dockerfile
+    image: kenx/php:7.2-swoole
     container_name: dev_php
     restart: always
     ports:
