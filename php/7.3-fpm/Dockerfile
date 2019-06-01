@@ -47,6 +47,7 @@ RUN set -ex; \
         libjpeg62-turbo-dev \
         libpng-dev \
 # others
+		libzip-dev \
         libmcrypt-dev; \
 	\
     docker-php-ext-install -j$(nproc) pdo_mysql sockets mysqli zip pcntl; \

@@ -16,15 +16,16 @@ services:
       - php
   php:
     build:
-      context: ../php/7.2-fpm
+      context: ../php/7.2-fpm-xdebug
       dockerfile: Dockerfile
-    image: kenx/php:7.2-fpm
+    image: kenx/php:7.2-fpm-xdebug
     container_name: dev_php
     restart: always
     ports:
       - "9000:9000"
     volumes:
       - ./data/wwwroot:/var/wwwroot
+      - ./conf/php/xdebug-docke-for-mac.ini:/usr/local/etc/php/conf.d/xdebug-config.ini
     env_file:
       - ./.php.env
       - ./.mysql.env

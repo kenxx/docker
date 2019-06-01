@@ -19,10 +19,10 @@ services:
 #      - default
 #      - project_default
   php:
-    build: ../php
-      context: ../php
-      dockerfile: Dockerfile-swoole
-    image: kenx/php:7.1-fpm-full
+    build:
+      context: ../php/7.2-fpm
+      dockerfile: Dockerfile
+    image: kenx/php:7.2-fpm
     container_name: prod_php
     restart: always
 #    ports:
