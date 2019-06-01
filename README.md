@@ -22,9 +22,9 @@ ARG COMPOSER=https://getcomposer.org/installer
 # will set packagist mirror
 ARG COMPOSER_ADDR=https://packagist.phpcomposer.com
 # will install xdebug-2.6.0
-ARG XDEBUG=1
+ARG XDEBUG=2.6.0
 # will install swoole-2.2.0
-ARG SWOOLE=1
+ARG SWOOLE=2.2.0
 ```
 
 # docker-compose
@@ -35,7 +35,7 @@ Some dockers managed by docker-compose.
 
 stack
 
-1. php:7.1-fpm
+1. php:7.2-fpm
 2. nginx:latest
 3. mysql:5.7
 4. redis:latest
@@ -57,7 +57,7 @@ memcached: 11211
 
 stack
 
-1. php:7.1-fpm
+1. php:7.2-fpm
 2. nginx:latest
 3. mysql:5.7
 4. redis:latest
