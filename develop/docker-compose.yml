@@ -14,6 +14,8 @@ services:
       - ./certs:/etc/certs
     depends_on:
       - php
+    environment:
+      - TZ=Asia/Shanghai
   php:
     build:
       context: ../php/7.2-fpm-xdebug
@@ -26,6 +28,8 @@ services:
     volumes:
       - ./data/wwwroot:/var/wwwroot
       - ./conf/php/xdebug-docke-for-mac.ini:/usr/local/etc/php/conf.d/xdebug-config.ini
+    environment:
+      - TZ=Asia/Shanghai
     env_file:
       - ./.php.env
       - ./.mysql.env
@@ -33,6 +37,8 @@ services:
     image: mysql:5.7
     container_name: dev_mysql
     restart: always
+    environment:
+      - TZ=Asia/Shanghai
     env_file:
       - ./.mysql.env
     ports:
@@ -43,14 +49,22 @@ services:
     image: redis:latest
     container_name: dev_redis
     restart: always
+    sysctls:
+      - net.core.somaxconn=512
     ports:
       - "6379:6379"
+    environment:
+      - TZ=Asia/Shanghai
     volumes:
       - ./data/redis:/data
+      - ./conf/redis/redis.conf:/etc/redis.conf
+    command: redis-server /etc/redis.conf
   mongo:
     image: mongo:latest
     container_name: dev_mongo
     restart: always
+    environment:
+      - TZ=Asia/Shanghai
     ports:
       - "27017:27017"
     volumes:
@@ -59,11 +73,15 @@ services:
     image: memcached:latest
     container_name: dev_memcached
     restart: always
+    environment:
+      - TZ=Asia/Shanghai
     ports:
       - "11211:11211"
   adminer:
     image: adminer:latest
     container_name: dev_adminer
     restart: always
+    environment:
+      - TZ=Asia/Shanghai
     ports:
       - "8080:8080"
