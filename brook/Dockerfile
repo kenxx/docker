@@ -11,7 +11,9 @@ RUN set -ex; \
     apk add --no-cache --virtual .persistent-deps \
     curl; \
     \
-    curl -L -e '; auto' -o "brook" "https://github.com/txthinking/brook/releases/download/${BROOK_VERSION}/brook";
+    curl -L -e '; auto' -o "brook" "https://github.com/txthinking/brook/releases/download/${BROOK_VERSION}/brook"; \
+    \
+    chmod +x brook;
 
 ENTRYPOINT ["/root/brook"]
 
