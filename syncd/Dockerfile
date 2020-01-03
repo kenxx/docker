@@ -1,6 +1,15 @@
 FROM alpine:latest
 
-RUN mkdir /usr/local/syncd
+RUN set -ex; \
+    \
+    sed -i 's#http://dl-cdn.alpinelinux.org#https://mirrors.aliyun.com#g' /etc/apk/repositories; \
+    \
+    apk add --no-cache --virtual .persistent-deps \
+        openssh \
+        bash \
+        git \
+        tar; \
+    mkdir /usr/local/syncd
 
 COPY ./output /usr/local/syncd
 
