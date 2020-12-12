@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:buster-slim
 
 ENV RRSHARE_URL="http://appdown.rrys.tv/rrshareweb_linux_2.20.tar.gz"
 
